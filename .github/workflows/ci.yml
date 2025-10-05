@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  msvc:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: stop update man-page
+      run: |
+        echo "set man-db/auto-update false" | sudo debconf-communicate
+        sudo dpkg-reconfigure man-db
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+    - uses: wx257osn2/cxx_environment@v3
+      with:
+        version: v20251103
+    - name: check msvc installed
+      id: check_msvc_installed
+      run: |
+        set +e
+        cxx-env-run cl /? > /dev/null
+        ret=$?
+        set -e
+        echo "msvc_not_found=$ret" >> "${GITHUB_OUTPUT}"
+    - name: install vs2026 insiders
+      if: ${{ steps.check_msvc_installed.outputs.msvc_not_found != '0' }}
+      run: |
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+        cxx-env-run /installer/msvc-wine.bash 18.0 --preview
+    - name: debug
+      run: |
+        cxx-env-run msbuild msvc_on_gha_sample.slnx /p:Configuration=Debug /p:TrackFileAccess=false
+        cxx-env-run bash -c 'source $(which msvcenv.sh); wine bin/msvc_on_gha_sample.exe'
+        rm -rf bin
+    - name: release
+      run: |
+        cxx-env-run msbuild msvc_on_gha_sample.slnx /p:Configuration=Release /p:TrackFileAccess=false
+        cxx-env-run wine bin/msvc_on_gha_sample.exe
+        rm -rf bin

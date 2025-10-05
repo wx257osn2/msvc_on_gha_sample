@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="msvc_on_gha_sample.vcxproj" Id="5fc883b3-a35e-4e9e-b74c-c45c7130c5c4" />
+</Solution>
