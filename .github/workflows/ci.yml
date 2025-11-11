@@ -31,7 +31,7 @@ jobs:
     - name: install vs2026 insiders
       if: ${{ steps.check_msvc_installed.outputs.msvc_not_found != '0' }}
       run: |
-        cxx-env-run /installer/msvc-wine.bash 18.0 --preview
+        cxx-env-run /installer/msvc-wine.bash 18.0
     - name: debug
       run: |
         cxx-env-run msbuild msvc_on_gha_sample.slnx /p:Configuration=Debug /p:TrackFileAccess=false
