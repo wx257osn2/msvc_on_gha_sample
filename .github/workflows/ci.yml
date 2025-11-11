@@ -31,7 +31,6 @@ jobs:
     - name: install vs2026 insiders
       if: ${{ steps.check_msvc_installed.outputs.msvc_not_found != '0' }}
       run: |
-        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
         cxx-env-run /installer/msvc-wine.bash 18.0 --preview
     - name: debug
       run: |
