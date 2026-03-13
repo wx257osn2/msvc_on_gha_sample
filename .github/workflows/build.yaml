@@ -1,0 +1,72 @@
+name: Ubuntu
+
+on:
+  push:
+    branches: [ "**" ]
+    tags: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  standalone:
+    strategy:
+      matrix:
+        include:
+          - image: ubuntu-24.04
+            arch: x86_64
+    runs-on: ${{ matrix.image }}
+    steps:
+    - name: stop update man-page
+      run: |
+        echo "set man-db/auto-update false" | sudo debconf-communicate
+        sudo dpkg-reconfigure man-db
+    - run: sudo apt update
+    - uses: wx257osn2/setup-apptainer@v1.4.4
+    - uses: actions/checkout@v5
+    - name: build
+      shell: bash
+      run: |
+        bash build.bash
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sif-${{ matrix.arch }}
+        path: ./cxx-${{ matrix.arch }}.sif
+  push:
+    strategy:
+      matrix:
+        include:
+          - image: ubuntu-24.04
+            arch: x86_64
+    runs-on: ${{ matrix.image }}
+    needs: standalone
+    permissions:
+      packages: write
+    steps:
+    - uses: wx257osn2/setup-apptainer@v1.4.4
+    - uses: actions/download-artifact@v5
+      with:
+        name: sif-${{ matrix.arch }}
+    - run: echo -n $GITHUB_TOKEN | apptainer registry login --username ${{ github.actor }} --password-stdin oras://ghcr.io
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - run: |
+        version=${REF##refs/tags/}
+        apptainer push cxx-${{ matrix.arch }}.sif oras://ghcr.io/wx257osn2/msvc_on_gha_sample:${version}-${{ matrix.arch }}
+      env:
+        REF: ${{ github.ref }}
+  deploy:
+    runs-on: ubuntu-24.04-arm
+    needs: push
+    permissions:
+      contents: write
+    steps:
+    - run: |
+        version=${REF##refs/tags/}
+        echo '```' > release_notes
+        echo "$ ./pull.bash ${version}" >> release_notes
+        echo '```' >> release_notes
+      env:
+        REF: ${{ github.ref }}
+    - uses: softprops/action-gh-release@v2
+      with:
+        body_path: release_notes

@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%post -c /bin/bash
+
+  set -euo pipefail
+
+  export DEBIAN_FRONTEND=noninteractive
+  ARCH=$(uname -m)
+  WIN_ARCH_0=${ARCH//86_/}
+  WIN_ARCH=${WIN_ARCH_0//aarch/arm}
+
+  /installer/ubuntu2404_prelude.bash
+  apt-get install -y --no-install-recommends git
+  /installer/ubuntu2404_msvc-wine_prerequisites.bash
+  /installer/ubuntu2404_postlude.bash
+  apt-get clean
+  rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+  CUSTOM_ENV=/.singularity.d/env/99-zz_custom_env.sh
+  echo "#!/bin/bash" > ${CUSTOM_ENV}
+  echo 'export PATH=${PATH}:'"/opt/msvc/bin/${WIN_ARCH}" >> ${CUSTOM_ENV}
+  cat >> ${CUSTOM_ENV} << 'EOF'
+export FONTCONFIG_FILE=/opt/fontconf/dummy.conf
+export WINEDEBUG=-all
+export WINEPREFIX=/opt/wineprefix
