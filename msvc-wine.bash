@@ -31,10 +31,12 @@ echo 'export WINEPATH="${WINEPATH};z:${REDISTRIBUTABLE_PATH//\//\\}\\debug_nonre
 if [ ${major} -eq 18 ]; then
   sed "s/143/145/g" -i wrappers/msvcenv.sh
 fi
+
+export WINEDEBUG=+module,+loaddll
+
 ./install.sh ${dest}
 
 echo "installed"
-export WINEDEBUG=+module,+loaddll
 
 wine_version=$(wine --version | sed -e 's/wine-\([0-9.]*\) (.*)/\1/')
 curl -sSL -o wine-mono.msi https://dl.winehq.org/wine/wine-mono/${wine_version}.0/wine-mono-${wine_version}.0-x86.msi
