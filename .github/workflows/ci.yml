@@ -8,7 +8,10 @@ on:
 
 jobs:
   msvc:
-    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        image: [ "ubuntu-26.04", "ubuntu-26.04-arm" ]
+    runs-on: ${{ matrix.image }}
     steps:
     - name: stop update man-page
       run: |
