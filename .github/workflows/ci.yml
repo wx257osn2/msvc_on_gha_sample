@@ -14,7 +14,7 @@ jobs:
       run: |
         echo "set man-db/auto-update false" | sudo debconf-communicate
         sudo dpkg-reconfigure man-db
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
       with:
         submodules: recursive
     - uses: wx257osn2/cxx_environment@v3
@@ -29,7 +29,7 @@ jobs:
         ret=$?
         set -e
         echo "msvc_not_found=$ret" >> "${GITHUB_OUTPUT}"
-    - name: install vs2026 insiders
+    - name: install vs2026
       if: ${{ steps.check_msvc_installed.outputs.msvc_not_found != '0' }}
       run: |
         cxx-env-run /installer/msvc-wine.bash 18.0
