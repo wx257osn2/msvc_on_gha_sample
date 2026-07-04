@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: ubuntu:24.04
+From: ubuntu:26.04
 
 %post -c /bin/bash
 
@@ -10,7 +10,7 @@ From: ubuntu:24.04
   WIN_ARCH_0=${ARCH//86_/}
   WIN_ARCH=${WIN_ARCH_0//aarch/arm}
 
-  /installer/ubuntu2404_prelude.bash
+  /installer/ubuntu2604_prelude.bash
   apt-get install -y --no-install-recommends git
   /installer/ubuntu2404_msvc-wine_prerequisites.bash
   /installer/ubuntu2404_postlude.bash

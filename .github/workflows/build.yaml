@@ -12,8 +12,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: ubuntu-24.04
+          - image: ubuntu-26.04
             arch: x86_64
+          - image: ubuntu-26.04-arm
+            arch: aarch64
     runs-on: ${{ matrix.image }}
     steps:
     - name: stop update man-page
@@ -21,13 +23,13 @@ jobs:
         echo "set man-db/auto-update false" | sudo debconf-communicate
         sudo dpkg-reconfigure man-db
     - run: sudo apt update
-    - uses: wx257osn2/setup-apptainer@v1.4.4
+    - uses: wx257osn2/setup-apptainer@v1.5.2
     - uses: actions/checkout@v5
     - name: build
       shell: bash
       run: |
         bash build.bash
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: sif-${{ matrix.arch }}
         path: ./cxx-${{ matrix.arch }}.sif
@@ -35,15 +37,17 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: ubuntu-24.04
+          - image: ubuntu-26.04
             arch: x86_64
+          - image: ubuntu-26.04-arm
+            arch: aarch64
     runs-on: ${{ matrix.image }}
     needs: standalone
     permissions:
       packages: write
     steps:
-    - uses: wx257osn2/setup-apptainer@v1.4.4
-    - uses: actions/download-artifact@v5
+    - uses: wx257osn2/setup-apptainer@v1.5.2
+    - uses: actions/download-artifact@v8
       with:
         name: sif-${{ matrix.arch }}
     - run: echo -n $GITHUB_TOKEN | apptainer registry login --username ${{ github.actor }} --password-stdin oras://ghcr.io
@@ -55,7 +59,7 @@ jobs:
       env:
         REF: ${{ github.ref }}
   deploy:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     needs: push
     permissions:
       contents: write
@@ -67,6 +71,6 @@ jobs:
         echo '```' >> release_notes
       env:
         REF: ${{ github.ref }}
-    - uses: softprops/action-gh-release@v2
+    - uses: softprops/action-gh-release@v3
       with:
         body_path: release_notes
