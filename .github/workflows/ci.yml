@@ -24,6 +24,12 @@ jobs:
       with:
         version: image
         url_format: 'oras://ghcr.io/wx257osn2/msvc_on_gha_sample:{}'
+    - name: force rebuild image
+      run: |
+        pushd image
+        ./build.bash
+        mv cxx*.sif /mnt/cxx_environment/
+        popd
     - name: check msvc installed
       id: check_msvc_installed
       run: |
